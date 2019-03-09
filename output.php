@@ -6,54 +6,80 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+
 <?php
+//削除「本当に削除しますか？」でいいえを選択
 if(isset($_REQUEST['no'])){
 	header('Location:homepage.php');
 	exit;
 }
-$pdo=new PDO('mysql:host=localhost;dbname=zoo;charset=utf8','staff', 'password');
+//ブラウザでエラー非表示
+ini_set('display_errors',0);
+
+//バリデーション関数の有効化
+require_once 'validation.php';
+
+//リクエストパラメータ
+$name=$_REQUEST['name'];
+$age=$_REQUEST['age'];
+$id=$_REQUEST['id'];
+
+//DB接続
+require_once 'access.php';
+
 if (isset($_REQUEST['command'])) {
 	switch ($_REQUEST['command']) {
 	case 'update':
 	  echo '<h1 style="background-color:aqua">更新</h1>';
 		$sql=$pdo->prepare('update member set name=?, age=? where id=?');
-	  $age=mb_convert_kana($_REQUEST['age'],'n');
-	  if (empty($_REQUEST['name'])) {
-		  echo '名前を入力してください。';
-	  } else
-	  if ( !preg_match('/[0-9]+/',$age) ) {
-		  echo '年齢を整数で入力してください。';
-	  } else
-	  if ($sql->execute([htmlspecialchars($_REQUEST['name']),$age, $_REQUEST['id']])) {
+
+    //バリデーション
+    list($name,$age,$err)=val($name,$age);
+    if($err==1)echo $name;break;
+
+		//三項演算子を用いた。
+    echo $sql->execute([htmlspecialchars($name),$age,$id]) ? '更新に成功しました。':'更新に失敗しました。';
+	  /*以下と同義
+		if ($sql->execute([htmlspecialchars($name),$age,$id])) {
 		  echo '更新に成功しました。';
 	  } else {
 		  echo '更新に失敗しました。';
 	  }
+		*/
 		break;
+
+
 	case 'insert':
 	  echo '<h1 style="background-color:pink">新規登録</h1>';
 		$sql=$pdo->prepare('insert into member values(null,?,?)');
-	  $age=mb_convert_kana($_REQUEST['age'],'n');
-	  if (empty($_REQUEST['name'])) {
-	  	echo '名前を入力してください。';
-	  } else
-	  if ( !preg_match('/[0-9]+/',$age) ) {
-	  	echo '年齢を整数で入力してください。';
-	  } else
-	  if ($sql->execute( [ htmlspecialchars($_REQUEST['name']),$age ] )) {
+
+		//バリデーション
+    list($name,$age,$err)=val($name,$age);
+    if($err==1){echo $name;break;}
+
+    //三項演算子を用いた。
+	  echo $sql->execute([htmlspecialchars($name),$age]) ? '新規登録が完了しました。':'新規登録に失敗しました。';
+		/*以下と同義
+		if ($sql->execute( [ htmlspecialchars($name),$age])) {
 	  	echo '新規登録が完了しました。';
 	  } else {
 	  	echo '新規登録に失敗しました。';
 	  }
+		*/
 		break;
+
+
 	case 'delete':
 	  echo '<h1 style="background-color:red">削除</h1>';
 		$sql=$pdo->prepare('delete from member where id=?');
-		if ($sql->execute( [$_REQUEST['id']] )) {
-			echo $_REQUEST['name'],'の削除が完了しました。';
+		if ($sql->execute( [$id] )) {
+			echo $name,'の削除が完了しました。';
 		} else {
-			echo $_REQUEST['name'],'の削除に失敗しました。';
+			echo $name,'の削除に失敗しました。';
 		}
+		/*三項演算子を用いて
+    echo $sql->execute([$id]) ? $name,'の削除が完了しました。': $name,'の削除に失敗しました。';
+		のようにかくと","でParse errorとなるのでここではifを使った。*/
 		break;
 	}
 }

@@ -12,7 +12,7 @@
     <table>
     <tr><th>名前</th><th>年齢</th></tr>
 <?php
-$pdo=new PDO('mysql:host=localhost;dbname=zoo;charset=utf8','staff', 'password');
+  require_once 'access.php';
   foreach ($pdo->query('select * from member') as $row) {
     echo '<tr>';
   	echo '<td>',$row['name'], '</td>';
