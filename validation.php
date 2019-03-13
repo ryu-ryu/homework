@@ -8,8 +8,8 @@ const ERR_MESSAGE_AGE = '年齢を整数で入力してください。';
 function validateName($name) {
   $err = 0;
   if (empty($name)) {
-    $err = 1;
     $message = ERR_MESSAGE_NAMEl;
+    $err = 1;
   }
   return [$message, $err];
 }
@@ -17,7 +17,8 @@ function validateName($name) {
 function validateAge($age) {
   $err = 0;
   if (!preg_match('/[0-9]+/',$age)) {
-    $err = 1;
     $message = ERR_MESSAGE_AGE;
+    $err = 1;
   }
+  return [$message, $err];
 }
